@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  kakaoId      String   @unique
+  nickname     String
+  profileImage String?
+  email        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  refreshToken String?
+
+  answers      Answer[]
+  monthlyStats MonthlyStat[]
+  reports      Report[]
+}
+
+model Question {
+  id        Int      @id @default(autoincrement())
+  date      DateTime @unique @db.Date 
+  content   String
+  category  String?
+  createdAt DateTime @default(now())
+
+  answers   Answer[]
+}
+
+model Answer {
+  id           String   @id @default(uuid())
+  content      String   @db.Text
+  emotionScore Float?
+  isPublic     Boolean  @default(false)
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  
+  questionId   Int
+  question     Question @relation(fields: [questionId], references: [id])
+  reports      Report[]
+
+  @@index([userId])
+  @@index([questionId])
+}
+
+model MonthlyStat {
+  id             String   @id @default(uuid())
+  year           Int
+  month          Int
+  coverImage     String?
+  completedCount Int      @default(0)
+  
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, year, month])
+}
+
+model Report {
+  id        String   @id @default(uuid())
+  reason    String
+  createdAt DateTime @default(now())
+
+  answerId  String
+  answer    Answer   @relation(fields: [answerId], references: [id])
+
+  reporterId String
+  reporter   User     @relation(fields: [reporterId], references: [id])
+
+  @@unique([reporterId, answerId]) // 한 사람이 같은 답변을 중복 신고 불가
+}
