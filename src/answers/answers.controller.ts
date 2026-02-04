@@ -11,7 +11,7 @@ export class AnswersController {
     @Post()
     async create(@Req() req, @Body() createAnswerDto: CreateAnswerDto) {
         // req.user is populated by JwtStrategy
-        const userId = req.user.userId;
+        const userId = req.user.id;
         return this.answersService.create(userId, createAnswerDto);
     }
 
@@ -21,13 +21,13 @@ export class AnswersController {
         @Query('year') year: string,
         @Query('month') month: string,
     ) {
-        const userId = req.user.userId;
+        const userId = req.user.id;
         return this.answersService.findMonthly(userId, parseInt(year), parseInt(month));
     }
 
     @Delete(':id')
     async remove(@Req() req, @Param('id') id: string) {
-        const userId = req.user.userId;
+        const userId = req.user.id;
         return this.answersService.delete(userId, id);
     }
 }
